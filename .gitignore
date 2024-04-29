@@ -5,6 +5,7 @@ auth_info
 audio
 video
 images
+transcript
 .env
 config.json
 package-lock.json
