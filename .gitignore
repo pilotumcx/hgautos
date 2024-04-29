@@ -10,4 +10,3 @@ transcript
 config.json
 package-lock.json
 .node-persist/*
-ca.pem
