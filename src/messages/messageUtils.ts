@@ -7,6 +7,7 @@ import extensoes from '../utils/extensoes.js'
 import dbFunctions from '../utils/utilsdb.js'
 import {config} from '../global.js'
 import utilsgeral from '../utils/utilsgeral.js';
+import {summary} from '../lib/summary.js';
 
 function delay(ms: number | undefined) {
   return new Promise(resolve => setTimeout(resolve, ms));
@@ -14,20 +15,9 @@ function delay(ms: number | undefined) {
 
 const emails:any[] =['giovani.emp@gmail.com','alex@optimalmarketing.io','http://Bezerraraphaelbgmail.com','tondinrafael@gmail.com','data.brainside@gmail.com']
 
-const apiKey = config.openai_key;
-const openai = new OpenAI();
-
-
 export function delayDb(ms:any) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
-
-
-
-/// /////////////////////////////////////////////////
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-
 
 export function formatPhoneNumber2(number: string): string {
   // Remove caracteres não numéricos
@@ -40,14 +30,6 @@ export function formatPhoneNumber2(number: string): string {
 
   return cleaned + '@c.us';
 }
-
-/// /////////////função para passar numero pro formato mobile////////////////
-
-
-/// ////////////////////////função para atualizar histórico da conversa////////////////////
-
-// Função para codificar a imagem em base64
-
 
 
 export const sendEmail = (messages:any) => {
@@ -139,7 +121,6 @@ transporter.sendMail(mailOptions, (error: any, info: { messageId: any; }) => {
 }
 async function processMessage(message: any) {
   let input = '';
-
   const messageType = Object.keys(message.message)[0]; // Identifica o tipo de mensagem principal
 
   switch (messageType) {
@@ -165,7 +146,7 @@ async function processMessage(message: any) {
 
   // Verifica se existe uma quotedMessage, independentemente do tipo da mensagem principal
   const contextInfo = message.message[messageType]?.contextInfo;
-  if (contextInfo?.quotedMessage) {
+  if (contextInfo?.quotedMessage || contextInfo?.externalAdReply) {
       const quotedMessage = contextInfo;
       // Passa o objeto completo da quotedMessage, a mensagem original e o input como primaryMessage
       input += " " + await extensoes.quoted(quotedMessage, input);
@@ -180,7 +161,6 @@ function extractContactDetails(messageText:any) {
 
   return email;
 }
-
 async function processFullMessage(client: any, fullMessage: string, message:any) {
  // const email: string | null | undefined = extractContactDetails(fullMessage);
  let apiResponse 
@@ -223,51 +203,57 @@ async function processFullMessage(client: any, fullMessage: string, message:any)
    await client.sendMessage(message.key.remoteJid, { location: { degreesLatitude: -23.497021, degreesLongitude: -46.41666, name:'HG autos'} })
  } else if (textoResposta.includes('contato direto') || textoResposta.includes('contato diretamente')) {
    console.log("Processando contato direto/diretamente...");
-  const response  = await client.sendMessage('5511976615204@s.whatsapp.net', `contato ${message.key.remoteJid} interessado em compra a vista`);
-   await client.sendMessage(message.key.remoteJid, {text: apiResponse.text});
-   console.log(response)
- } else if (textoResposta.includes('confirmar o agendamento')) {
+  await client.sendMessage('5511976615204@s.whatsapp.net', `contato ${message.key.remoteJid} interessado em compra a vista`);
+  const splitMessages = apiResponse.text.split(/(?<=[.?!])\s+/);
+
+  for (const messageText of splitMessages) {
+    const formattedMessageText = messageText.trim();
+
+    const finalPunctuation = /[.]$/;
+    const formattedMessageTextWithoutPunctuation = formattedMessageText.replace(finalPunctuation, '');
+
+    await client.sendMessage(message.key.remoteJid, { text: formattedMessageTextWithoutPunctuation.replace(/\]\(/g, ': ').replace(/\[|\]|\(|\)/g, '').replace(/\*\(/g,"") });
+
+    const delayTime = utilsgeral.getDelayTime(formattedMessageTextWithoutPunctuation);
+    await new Promise((resolve) => setTimeout(resolve, delayTime));
+  }
+ } else if (textoResposta.includes('confirmar o agendamento') || textoResposta.includes('agendamento feito') || textoResposta.includes('atendente confirmará') ) {
    console.log("Confirmando agendamento...");
-   await client.sendMessage(message.key.remoteJid, {text: apiResponse.text});
- try {
-       const apiResponsecpf = await utilsgeral.query({
-         "question": `retorne apenas o CPF fonecido pelo cliente, caso não tenha sido informado, responda 'nao informado'`,
-         "overrideConfig": {
-             "sessionId": message.key.remoteJid,
-             "vars": {
-              "contactId":contact[0].contact_id 
-          },
-         }
-     });
+   const splitMessages = apiResponse.text.split(/(?<=[.?!])\s+/);
 
-     const apiResponseSummary = await utilsgeral.query({
-       "question": 'verifique se todas as perguntas tiveram respostas, e gere um resumo do atendimento',
-       "overrideConfig": {
-           "sessionId": message.key.remoteJid,
-           "vars": {
-            "contactId":contact[0].contact_id 
-        },
-       }
-   });
-       console.log(apiResponsecpf.text)
-       let analise:any = 'não informado'
-       let riscostring:any = "CPF não informado"
-       if(apiResponsecpf.text !== 'não informado'){
-         analise = await utilsgeral.CPF(apiResponsecpf.text)
-         riscostring = `Nome: ${analise.nome}\n telefone: ${message.key.remoteJid.replace('@s.whatsapp.net','')}
-         CPF:${analise.cpf}\n
-         risco:${analise.risco.nivel}, ${analise.risco.descricao}, ${analise.risco.score} `
-       }             
-          sendEmail (`${apiResponseSummary.text}
-                     Risco de inadimplencia:
-                     ${riscostring}\n telefone: ${message.key.remoteJid.replace('@s.whatsapp.net','')}`)
-
+              for (const messageText of splitMessages) {
+                const formattedMessageText = messageText.trim();
+          
+                const finalPunctuation = /[.]$/;
+                const formattedMessageTextWithoutPunctuation = formattedMessageText.replace(finalPunctuation, '');
+          
+                await client.sendMessage(message.key.remoteJid, { text: formattedMessageTextWithoutPunctuation.replace(/\]\(/g, ': ').replace(/\[|\]|\(|\)/g, '').replace(/\*\(/g,"") });
+          
+                const delayTime = utilsgeral.getDelayTime(formattedMessageTextWithoutPunctuation);
+                await new Promise((resolve) => setTimeout(resolve, delayTime));
+              }
+                  try {
+                    await dbFunctions.updateChat(contact[0].contact_id)
+                    await summary(`chat_${message.key.remoteJid}`)
                    } catch (error) {
                      console.error(`Erro ao processar mensagens:`, error);
                  }
+                 
                } else {           
               // await speech(message.key.remoteJid, apiResponse.text)
-               await client.sendMessage(message.key.remoteJid, {text:apiResponse.text.replace(/\]\(/g, ': ').replace(/\[|\]|\(|\)/g, '').replace(/\*\(/g,"")});
+              const splitMessages = apiResponse.text.split(/(?<=[.?!])\s+/);
+
+              for (const messageText of splitMessages) {
+                const formattedMessageText = messageText.trim();
+          
+                const finalPunctuation = /[.]$/;
+                const formattedMessageTextWithoutPunctuation = formattedMessageText.replace(finalPunctuation, '');
+          
+                await client.sendMessage(message.key.remoteJid, { text: formattedMessageTextWithoutPunctuation.replace(/\]\(/g, ': ').replace(/\[|\]|\(|\)/g, '').replace(/\*\(/g,"")});
+          
+                const delayTime = utilsgeral.getDelayTime(formattedMessageTextWithoutPunctuation);
+                await new Promise((resolve) => setTimeout(resolve, delayTime));
+              }
    
 }
 }

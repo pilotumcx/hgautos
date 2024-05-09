@@ -1,12 +1,12 @@
-//import { parseStringPromise } from 'xml2js';
+import { parseStringPromise } from 'xml2js';
 import axios from 'axios';
-//import { Document } from "langchain/document";
-//import { OpenAIEmbeddings } from "langchain/embeddings/openai";
-//import { PineconeStore } from "langchain/vectorstores/pinecone";
+import { Document } from "langchain/document";
+import { OpenAIEmbeddings } from "langchain/embeddings/openai";
+import { PineconeStore } from "langchain/vectorstores/pinecone";
 import dotenv from "dotenv"
 dotenv.config()
-//import { pineconeCLient } from './db.js';
-/*
+import { pineconeCLient } from './db.js';
+
 // Define the Ad interface
 interface Ad {
   [x: string]: any;
@@ -106,14 +106,13 @@ export async function fetchAndParseXml() {
     const pageContent = carro.toLocaleLowerCase()
     processedDocs.push(new Document({ pageContent }));
     }
-    console.log(processedDocs)
     const pineconeIndex = pineconeCLient.Index("mindbot");
-      await PineconeStore.fromDocuments(processedDocs, new OpenAIEmbeddings(), {
+    await PineconeStore.fromDocuments(processedDocs, new OpenAIEmbeddings(), {
     pineconeIndex,
     namespace: "hgautos12",
     maxConcurrency: 5, // Maximum number of batch requests to allow at once. Each batch is 1000 vectors.
   })
-    // Do something with the extracted data
+    console.log('Done!');
   } catch (error) {
     console.log('Error fetching or parsing XML:', error);
   }
@@ -121,5 +120,3 @@ export async function fetchAndParseXml() {
   // Assuming the structure is { ADS: { AD: [...] } } based on your log
   // Loop through each ad and map to Ad interface structure
   
-
-fetchAndParseXml();*/

@@ -36,7 +36,7 @@ const access = promisify(fs.access);
    const sendEmail = (messages:any) => {
     let mailOptions = {
         from: config.email,
-        to: '507524b963da@mail.revendamais.com.br',
+        to: '507524b963da@mail.revendamais.com.br', // 507524b963da@mail.revendamais.com.br
         subject: 'agendamento cliente',
         text: `${messages}`,
        
@@ -180,4 +180,14 @@ async function createdirs(){
   }
 }
 
-  export default {query,delayDb, formatPhoneNumberGo, sendSessionDownEmail, extractContactDetails, limparStringEManterPrimeiraLinha, sendEmail, createdirs, CPF}
+ function getDelayTime(messageText: string): number {
+  const wordCount = messageText.trim().split(/\s+/).length;
+  const baseDelay = 1000;
+  const delayPerWord = 400;
+  const maxDelay = 5000;
+
+  const delayTime = Math.min(baseDelay + wordCount * delayPerWord, maxDelay);
+  return delayTime;
+}
+
+  export default {query,delayDb, getDelayTime, formatPhoneNumberGo, sendSessionDownEmail, extractContactDetails, limparStringEManterPrimeiraLinha, sendEmail, createdirs, CPF}

@@ -2,7 +2,7 @@ import { makeWASocket, fetchLatestBaileysVersion, useMultiFileAuthState, Disconn
 import { Boom } from '@hapi/boom'
 import utils from './handleMessage.js';
 import emailDown from './messageUtils.js'
-
+let clientGlobal:any
 
 export async function startWhatsAppSocket() {
     try {
@@ -46,7 +46,7 @@ export async function startWhatsAppSocket() {
             console.log(JSON.stringify(message, undefined, 2));
         
             // Verificar se a mensagem não foi enviada pelo próprio bot
-            if (!message.key.fromMe) {
+            if (!message.key.fromMe && !message.key.remoteJid.includes('g.us') && !message.key.remoteJid.includes('@broadcast')) {
                 console.log('Respondendo a', message.key.remoteJid);
         
                 // Verificar se a mensagem contém 'Message absent from node' no 'messageStubParameters'
@@ -67,9 +67,13 @@ export async function startWhatsAppSocket() {
         });
         // Remember to save credentials when updated
         sock.ev.on('creds.update', saveCreds);
+        clientGlobal = sock;
 
     } catch (error) {
         console.error('Failed to start WhatsApp socket:', error);
     }
 }
-// Call the function to start the WhatsApp socket
+
+export function getSocket() {
+    return clientGlobal;
+  }

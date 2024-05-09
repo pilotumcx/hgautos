@@ -84,7 +84,7 @@ function encodeImage(imagePath: string): string {
                 ]
             }
         ],
-        max_tokens: 300
+        max_tokens: 500
     };
 
     try {
