@@ -112,7 +112,7 @@ async function generateFollowUpMessage(context: string): Promise<string> {
       const sock = getSocket();
       const followUpMessage = await generateFollowUpMessage(conversationHistory);
       await sendMessage(chat_id, followUpMessage, sock);
-      await updateFollowUpAttempt(attempts ,chat_id);
+      await updateFollowUpAttempt(chat_id, attempts);
       await addRecordToList(`${chat_id.replace('chat_','')}`, followUpMessage);
     }
 
