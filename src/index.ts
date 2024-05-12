@@ -6,6 +6,7 @@ import cron from 'node-cron';
 import {processFollowUpMessages} from './lib/followUp.js'
 import {fetchAndParseXml} from './lib/hgautoXML.js' 
 
+const port = process.env.PORT || 7004;
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -28,7 +29,7 @@ const scheduledTaskFollow = cron.schedule('0 13 * * *', async () => {
 scheduledTaskFollow.start();*/
 app.all('/carro', utilsdb.getCar);
 
-app.listen(7003, () => {
+app.listen(port, () => {
   console.log("App Listening on 7003 !");
 });
 

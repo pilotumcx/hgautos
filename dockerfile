@@ -19,7 +19,7 @@ COPY . .
 RUN npm run build
 
 # Expõe a porta 5000 para o container
-EXPOSE 7003
+EXPOSE 7004
 
 # Comando para iniciar a aplicação
 CMD ["npm", "start"]
