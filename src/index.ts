@@ -9,7 +9,7 @@ import {fetchAndParseXml} from './lib/hgautoXML.js'
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
+/*
 const scheduledTaskXML = cron.schedule('30 2 * * *', async () => {
   console.log('Executando fetchAndParseXml...');
   await fetchAndParseXml();
@@ -25,7 +25,7 @@ const scheduledTaskFollow = cron.schedule('0 13 * * *', async () => {
   scheduled: true,
   timezone: 'America/Sao_Paulo'
 });
-scheduledTaskFollow.start();
+scheduledTaskFollow.start();*/
 app.all('/carro', utilsdb.getCar);
 
 app.listen(7003, () => {
