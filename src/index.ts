@@ -33,5 +33,4 @@ app.listen(port, () => {
   console.log("App Listening on 7003 !");
 });
 
-utils.createdirs()
-startWhatsAppSocket();
+

@@ -11,7 +11,7 @@ import {fetchAndParseXml} from './lib/hgautoXML.js'
 
 const server = async () => {
 try {
-const port = 7003
+const port = 7004
 const scheduledTaskXML = cron.schedule('30 2 * * *', async () => {
     console.log('Executando fetchAndParseXml...');
     await fetchAndParseXml();
