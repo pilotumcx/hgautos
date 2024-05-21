@@ -25,7 +25,7 @@ async function insertChatAndUpdateMessage(contact_id: number, chat_id: string, s
       console.log(`Inserindo novo chat com ID ${chat_id}.`);
       // Se o chat não existir, insere um novo chat
       await pool.query(
-        `SET time_zone = 'America/Sao_Paulo';INSERT INTO chats (chat_id, contact_id, attempts, email ) VALUES (?, ?, ?, ?)`,
+        `INSERT INTO chats (chat_id, contact_id, attempts, email, start_timestamp) VALUES (?, ?, ?, ?, CONVERT_TZ(NOW(), @@session.time_zone, 'America/Sao_Paulo'))`,
         [chat_id, contact_id, 0, 'pendente']
       );
     } else {
@@ -35,13 +35,14 @@ async function insertChatAndUpdateMessage(contact_id: number, chat_id: string, s
     // Insere a mensagem na tabela messages
     console.log(`Inserindo mensagem no chat com ID ${chat_id}.`);
     await pool.query(
-      `SET time_zone = 'America/Sao_Paulo'; INSERT INTO messages (chat_id, sender, message) VALUES (?, ?, ?)`,
+      `INSERT INTO messages (chat_id, sender, message, timestamp) VALUES (?, ?, ?, CONVERT_TZ(NOW(), @@session.time_zone, 'America/Sao_Paulo'))`,
       [chat_id, sender, messageBody]
     );
 
     // Atualiza o last_message_timestamp do chat
+    console.log(`Atualizando o timestamp da última mensagem do chat com ID ${chat_id}.`);
     await pool.query(
-      `SET time_zone = 'America/Sao_Paulo'; UPDATE chats SET last_message_timestamp = CURRENT_TIMESTAMP WHERE chat_id = ?`,
+      `UPDATE chats SET last_message_timestamp = CONVERT_TZ(NOW(), @@session.time_zone, 'America/Sao_Paulo') WHERE chat_id = ?`,
       [chat_id]
     );
 
@@ -64,19 +65,28 @@ export const insertContact = async (userName: string, phone: string, chat_id:str
   }
 };
 
- export const updateChat = async (contact_id: string) => {
+export const updateChat = async (contact_id: string) => {
   const updateQuery = `
     UPDATE chats
-    SET email = 'enviado'
-    WHERE contact_id = ?;
+    SET email = 'enviado', last_message_timestamp = CONVERT_TZ(NOW(), @@session.time_zone, 'America/Sao_Paulo')
+    WHERE contact_id = ? AND email = 'pendente';
   `;
   try {
-    
     // Executa a query com os valores apropriados
-    const result = await pool.query(updateQuery, [contact_id]);
+    const [result]: any = await pool.query(updateQuery, [contact_id]);
+    
+    // Verifica se alguma linha foi afetada
+    if (result.affectedRows === 0) {
+      console.log('Nenhuma linha foi atualizada.');
+      return null;
+    }
+
     console.log('Contato atualizado com sucesso:', result);
+    return result;
   } catch (error) {
     console.error('Erro ao atualizar o contato:', error);
+    return null;
+
   } finally {
     // Não é recomendado fechar o pool após cada query em aplicações reais,
     // pois isso interrompe todas as conexões do pool.
@@ -84,12 +94,11 @@ export const insertContact = async (userName: string, phone: string, chat_id:str
   }
 }
 
-
       const updateCar = async(contactId:string, car:string) => {
         // Constrói a parte do comando SQL que atualiza o username apenas se ele não for null    
         const updateQuery = `
         UPDATE chats
-        SET car_interest = ?
+        SET car_interest = ?, last_message_timestamp = CONVERT_TZ(NOW(), @@session.time_zone, 'America/Sao_Paulo')
         WHERE contact_id = ?;
         `;
         try {

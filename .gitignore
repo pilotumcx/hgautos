@@ -5,8 +5,11 @@ auth_info
 audio
 video
 images
+stickers
 transcripts
 .env
 config.json
 package-lock.json
 .node-persist/*
+documents
+sessions

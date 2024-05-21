@@ -49,6 +49,23 @@ await transcritores.saveTranscription(transcript.replace(/^.*[\\\/]/, '') + '.tx
 return `Tente encontrar os produtos mais similares a descrição a seguir:${imgTranscription}`;
 }
 
+async function processDocument(message:any) {
+  const buffer:any = await downloadMediaMessage(message, 'buffer', {});
+  const documentFileName = `documents/${message.key.id}.${mime.extension(message.message.documentMessage.mimetype)}`;
+  const documentFilePath = await saveMediaFile(buffer, documentFileName);
+  return `Documento recebido: ${documentFileName}`;
+}
+async function processSticker(message:any) {
+  const buffer:any = await downloadMediaMessage(message, 'buffer', {});
+  const stickerFileName = `stickers/${message.key.id}.${mime.extension(message.message.stickerMessage.mimetype)}`;
+  const stickerFilePath = await saveMediaFile(buffer, stickerFileName);
+  return `Adesivo recebido: ${stickerFileName}`;
+}
+
+async function processContact(message:any) {
+  const contact = message.message.contactMessage;
+  return `Contato recebido: ${contact.displayName} (${contact.vcard})`;
+}
 // Função para processar áudio
 async function processAudio(message: any): Promise<string> {
 const buffer:any = await downloadMediaMessage(message, 'buffer', { });
@@ -112,6 +129,4 @@ if (adTitle) {
 }
 
 
- 
-
-export default {processText, processAudio, processImage, processVideo, quoted}
+export default {processText, processAudio, processImage, processVideo, quoted, processDocument, processContact, processSticker}

@@ -10,7 +10,7 @@ const port = process.env.PORT || 7004;
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-/*
+
 const scheduledTaskXML = cron.schedule('30 2 * * *', async () => {
   console.log('Executando fetchAndParseXml...');
   await fetchAndParseXml();
@@ -20,13 +20,13 @@ const scheduledTaskXML = cron.schedule('30 2 * * *', async () => {
 });
 scheduledTaskXML.start();
 
-const scheduledTaskFollow = cron.schedule('0 13 * * *', async () => {
+const scheduledTaskFollow = cron.schedule('0 9-18 * * *', async () => {
   await processFollowUpMessages();
 },  {
   scheduled: true,
   timezone: 'America/Sao_Paulo'
 });
-scheduledTaskFollow.start();*/
+scheduledTaskFollow.start();
 app.all('/carro', utilsdb.getCar);
 
 app.listen(port, () => {

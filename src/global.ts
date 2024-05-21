@@ -13,8 +13,10 @@ const audioDIr = path.join(projectRoot, 'audio');
 const imagesDIr = path.join(projectRoot, 'images');
 const transcriptsDIr = path.join(projectRoot, 'transcripts');
 const envpath = path.join(projectRoot, '.env');
+const docsDIr = path.join(projectRoot, 'documents');
+const stickersDIr = path.join(projectRoot, 'stickers');
 
-export let dirs = [videoDIr, audioDIr, imagesDIr, transcriptsDIr]
+export let dirs = [videoDIr, audioDIr, imagesDIr, transcriptsDIr, docsDIr, stickersDIr]
 
 
 export interface obj {

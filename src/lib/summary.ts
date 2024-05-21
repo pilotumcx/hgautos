@@ -9,12 +9,12 @@ async function generateSummary(context: string): Promise<string> {
        const response =await openai.chat.completions.create({
           messages: [{ role: "system", content: `analise o contexto da conversa, retorne as informações a seguir. 
           Resumo do Atendimento:\n
-          Nome cliente:\nveiculo de interese:\nTroca de Veículo:\nFinanciamento:\nCPF fornecido para simulação:\nAgendamento:\n.
+          Nome cliente:\nveiculo de interese:\nTroca de Veículo ou valor de entrada:\nInterese financiamento:\nCPF fornecido para simulação:\nAgendamento:\n.
 
           /////
           ${context}
           /////
-          informe apenas das informações que você precisa, sem observações ou comentarios` }],
+          informe apenas das informações que você precisa, sem observações ou comentarios, lembre-se de informar o CPF apenas com os numeros, sem pontos nem espaços.` }],
           model: "gpt-3.5-turbo",
         });
   
@@ -52,12 +52,20 @@ export async function summary(chat_id:string){
     const cpf = extractAndVerifyCPF(summ)
     let cpfstring = "não informado"
     if (cpf) {
-     const cpfAnalise = await utils.CPF(cpf)
-     cpfstring = `Nome:${cpfAnalise.nome}\nTelefone:${chat_id.replace('chat_','').replace('@s.whatsapp.net','')}\nCPF:${cpfAnalise.cpf}\nRisco:risco:${cpfAnalise.risco.nivel}\nPontuação:${cpfAnalise.risco.score}\nDescrição:${cpfAnalise.risco.descricao}`
-     console.log("CPF encontrado: ", cpf);
-    } 
-     utils.sendEmail(`${summ}\n\n${cpfstring}`)
-    console.log(`Resumo Antendimento:\n${summ}\n\n${cpfstring}`)   
+        try {
+          const cpfAnalise = await utils.CPF(cpf);
+          if (cpfAnalise && cpfAnalise.nome && cpfAnalise.cpf && cpfAnalise.risco && cpfAnalise.risco.nivel && cpfAnalise.risco.score && cpfAnalise.risco.descricao) {
+            cpfstring = `Nome:${cpfAnalise.nome}\nTelefone:${chat_id.replace('chat_','').replace('@s.whatsapp.net','')}\nCPF:${cpfAnalise.cpf}\nRisco:risco:${cpfAnalise.risco.nivel}\nPontuação:${cpfAnalise.risco.score}\nDescrição:${cpfAnalise.risco.descricao}`;
+          } else {        
+            console.error('Retorno inválido da função utils.CPF');
+          }
+        } catch (error) {
+          cpfstring = 'CPF informado é invalido';
+          console.error('Erro ao analisar o CPF:', error);
+        }
+      }
+    utils.sendEmail(`${summ}\nTelefone:${chat_id.replace('chat_','').replace('@s.whatsapp.net','')} \n\n${cpfstring}`,chat_id)
+    console.log(`${summ}\nTelefone:${chat_id.replace('chat_','').replace('@s.whatsapp.net','')} \n\n${cpfstring}`)      
  }
 
  

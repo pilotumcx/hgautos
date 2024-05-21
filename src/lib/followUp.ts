@@ -30,7 +30,7 @@ async function updateFollowUpAttempt(chat_Id: string, attempts:any): Promise<voi
   try {
     await pool.query(`
       UPDATE chats
-      SET attempts = ?
+      SET attempts = ?, last_message_timestamp = CONVERT_TZ(NOW(), @@session.time_zone, 'America/Sao_Paulo')
       WHERE chat_id = ?
     `, [attemptsForm+1, chat_Id]);
     console.log(`Tentativa de follow-up atualizada para o contato ${chat_Id}.`);
@@ -60,7 +60,7 @@ async function getConversationHistory(chat_id: string): Promise<string> {
 
 
 async function sendMessage(chat_id: string, message: string, client:any): Promise<void> {
-  const updateQuery = `INSERT INTO messages (chat_id, sender, message) VALUES (?, ?, ?);`;
+  const updateQuery = `INSERT INTO messages (chat_id, sender, message, timestamp) VALUES (?, ?, ?, CONVERT_TZ(NOW(), @@session.time_zone, 'America/Sao_Paulo') );`;
     try {
       await pool.query(updateQuery, [chat_id, "assistente", message]);
       await client.sendMessage(`${chat_id.replace('chat_','')}`, { text: message });

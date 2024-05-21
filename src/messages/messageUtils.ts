@@ -139,6 +139,15 @@ async function processMessage(message: any) {
      case 'conversation':
             input = await extensoes.processText(message);
             break;
+            case 'documentMessage':
+              input = await extensoes.processDocument(message);
+              break;
+            case 'stickerMessage':
+              input = await extensoes.processSticker(message);
+              break;
+            case 'contactMessage':
+              input = await extensoes.processContact(message);
+              break;
       default:
           console.log('Tipo de mensagem não suportado.');
           input = 'responda com a mensagem de boas vindas';
@@ -217,7 +226,7 @@ async function processFullMessage(client: any, fullMessage: string, message:any)
     const delayTime = utilsgeral.getDelayTime(formattedMessageTextWithoutPunctuation);
     await new Promise((resolve) => setTimeout(resolve, delayTime));
   }
- } else if (textoResposta.includes('confirmar o agendamento') || textoResposta.includes('agendamento feito') || textoResposta.includes('atendente confirmará') ) {
+ } else if (textoResposta.includes('confirmar o agendamento') || textoResposta.includes('agendamento feito') || textoResposta.includes('atendente entrará') ) {
    console.log("Confirmando agendamento...");
    const splitMessages = apiResponse.text.split(/(?<=[.?!])\s+/);
 
@@ -233,8 +242,10 @@ async function processFullMessage(client: any, fullMessage: string, message:any)
                 await new Promise((resolve) => setTimeout(resolve, delayTime));
               }
                   try {
-                    await dbFunctions.updateChat(contact[0].contact_id)
+                    const res =  await dbFunctions.updateChat(contact[0].contact_id)
+                    if(res){
                     await summary(`chat_${message.key.remoteJid}`)
+                  }
                    } catch (error) {
                      console.error(`Erro ao processar mensagens:`, error);
                  }

@@ -1,21 +1,37 @@
-import { makeWASocket, fetchLatestBaileysVersion, useMultiFileAuthState, DisconnectReason} from '@whiskeysockets/baileys';
+import {makeWASocket,
+    DisconnectReason, fetchLatestBaileysVersion, getAggregateVotesInPollMessage,
+    makeCacheableSignalKeyStore, isJidBroadcast
+  } from '@whiskeysockets/baileys'
 import { Boom } from '@hapi/boom'
 import utils from './handleMessage.js';
 import emailDown from './messageUtils.js'
 let clientGlobal:any
+import logger from '../models/logs.js';
+import useSequelizeDBAuthStore from '../controllers/useSequelizeDBAuthStore.js'
+import NodeCache from 'node-cache'
 
 export async function startWhatsAppSocket() {
-    try {
-        // Correct method name from saveState to saveCreds
-        const { state, saveCreds } = await useMultiFileAuthState('./auth_info');
-        const { version } = await fetchLatestBaileysVersion();
-        
-        const sock = makeWASocket({
-            printQRInTerminal: true,
-            auth: state,
-            version,
-           
-        });
+    try{
+    const { state, saveCreds } = await useSequelizeDBAuthStore(`hgSessison`);
+    const { version, isLatest } = await fetchLatestBaileysVersion()
+    console.log(`using WA v${version.join('.')}, isLatest: ${isLatest}`)
+    const msgRetryCounterCache = new NodeCache()
+    const sock = makeWASocket({
+      version,
+      logger,
+      printQRInTerminal: true,
+      auth: {
+          creds: state.creds,
+          /** caching makes the store faster to send/recv messages */
+          keys: makeCacheableSignalKeyStore(state.keys, logger),
+      },
+      msgRetryCounterCache,
+      generateHighQualityLinkPreview: true,
+      // ignore all broadcast messages -- to receive the same
+      // comment the line below out
+      shouldIgnoreJid: jid => isJidBroadcast(jid),
+      // implement to handle retries & poll updates
+  })
         sock.ev.on('connection.update', async (update) => {
             const { connection, lastDisconnect } = update;
             if (connection === 'close') {
