@@ -36,7 +36,7 @@ const access = promisify(fs.access);
    const sendEmail = (messages:any, chat:string) => {
     let mailOptions = {
         from: config.email,
-        to: ['giovaniemp@gmail.com','507524b963da@mail.revendamais.com.br'], // 507524b963da@mail.revendamais.com.br
+        to: ['giovaniemp@gmail.com','507524b963da@mail.revendamais.com.br','bezerraraphaelb@gmail.com'], // 507524b963da@mail.revendamais.com.br
         subject: `interesse cliente ${chat.replace('chat_','').replace('@s.whatsapp.net','')}`,
         text: `${messages}`,
        

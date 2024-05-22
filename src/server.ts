@@ -33,7 +33,7 @@ const scheduledTaskXML = cron.schedule('30 2 * * *', async () => {
 utils.createdirs()
 startWhatsAppSocket();
 await sequelize.sync();
-console.log(`Runnig database" ${process.env.DB_NAME}`);
+console.log(`Runnig database" ${process.env.database}`);
 
 await app.listen(port)
 console.log(`Running on port ${port}`);
