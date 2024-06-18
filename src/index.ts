@@ -1,6 +1,5 @@
 import { startWhatsAppSocket } from './messages/sessionManager.js';
 import express from 'express';
-import utils from './utils/utilsgeral.js'
 import utilsdb from './utils/utilsdb.js'
 import cron from 'node-cron';
 import {processFollowUpMessages} from './lib/followUp.js'
@@ -27,7 +26,9 @@ const scheduledTaskFollow = cron.schedule('0 9-18 * * *', async () => {
   timezone: 'America/Sao_Paulo'
 });
 scheduledTaskFollow.start();
+
 app.all('/carro', utilsdb.getCar);
+
 
 app.listen(port, () => {
   console.log("App Listening on 7003 !");
